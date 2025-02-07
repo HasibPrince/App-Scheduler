@@ -39,6 +39,8 @@ object NotificationViewer {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
 
+        launchIntent.putExtra("package", packageName)
+
         Timber.d("Launch intent created: $launchIntent")
 
         val pendingIntent = PendingIntent.getActivity(

@@ -33,26 +33,30 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        intent.getStringExtra("package")?.let {
+            Timber.d("Package name: $it")
+            val launchIntent = packageManager.getLaunchIntentForPackage(it)
+            if (launchIntent != null) {
+                startActivity(launchIntent)
+                Timber.d("Launch Intent")
+            } else {
+                Timber.d("Launch intent is null")
+            }
+        }
+        window.apply {
+            addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            addFlags(WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON)
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
         }
-//
-//        // Add necessary flags to keep the screen on
-//        window.addFlags(
-//            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
-//                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
-//                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED
-//        )
 
         enableEdgeToEdge()
         Timber.d("onCreate: MainActivity")
         setContent {
             StartupTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) {
-                    AppSchedulerApp(it)
-                }
+                AppSchedulerApp()
             }
         }
 
@@ -93,26 +97,5 @@ class MainActivity : ComponentActivity() {
         val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
         intent.data = Uri.parse("package:${context.packageName}")
         context.startActivity(intent)
-    }
-
-
-    @Composable
-    private fun FirstScreen(modifier: Modifier) {
-        Box(
-            modifier = modifier,
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "Hello World: FirstScreen")
-        }
-    }
-
-    @Composable
-    private fun SecondScreen(modifier: Modifier) {
-        Box(
-            modifier = modifier,
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "Hello World: SecondScreen")
-        }
     }
 }
