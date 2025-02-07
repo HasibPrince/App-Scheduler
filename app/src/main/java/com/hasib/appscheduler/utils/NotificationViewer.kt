@@ -11,12 +11,13 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.hasib.appscheduler.ui.MainActivity
 import com.hasib.appscheduler.R
+import timber.log.Timber
 
-private const val NOTIFICATION_CHANNEL_ID = "CALLER_ID_NOTIFICATION_CHANNEL"
-private const val NOTIFICATION_ID = 3535
+private const val NOTIFICATION_CHANNEL_ID = "SCHEDULER_NOTIFICATION_CHANNEL"
+private const val NOTIFICATION_ID = 3737
 
 object NotificationViewer {
-    fun showNotification(context: Context, title: String, message: String) {
+    fun showNotification(context: Context, title: String, message: String, packageName: String) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             showNotificationForOldVersion(context, title, message)
             return
@@ -24,19 +25,26 @@ object NotificationViewer {
 
         val notificationManager = context.getSystemService(NotificationManager::class.java);
         var notificationChannel = NotificationChannel(
-           NOTIFICATION_CHANNEL_ID, context.getString(R.string.title_incoming_call),
+            NOTIFICATION_CHANNEL_ID, context.getString(R.string.title_incoming_call),
             NotificationManager.IMPORTANCE_HIGH
         )
 
-        notificationManager.createNotificationChannel(notificationChannel)
+        Timber.d("Notification channel created")
 
-        val intent = Intent(Intent.ACTION_MAIN, null)
-        intent.flags = Intent.FLAG_ACTIVITY_NO_USER_ACTION or Intent.FLAG_ACTIVITY_NEW_TASK
-        intent.setClass(context, MainActivity::class.java)
+        notificationManager.createNotificationChannel(notificationChannel)
+        val launchIntent = Intent(
+            context,
+            MainActivity::class.java
+        ).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+
+        Timber.d("Launch intent created: $launchIntent")
+
         val pendingIntent = PendingIntent.getActivity(
             context,
             1,
-            intent,
+            launchIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -44,14 +52,14 @@ object NotificationViewer {
         builder.setOngoing(true);
         builder.setContentIntent(pendingIntent);
         builder.setFullScreenIntent(pendingIntent, true)
-        builder.setCategory(NotificationCompat.CATEGORY_CALL)
-        builder.setAutoCancel(false)
+        builder.setCategory(NotificationCompat.CATEGORY_ALARM)
 
         builder.setSmallIcon(R.drawable.ic_launcher_foreground);
         builder.setContentTitle(title);
         builder.setContentText(message)
 
-        notificationManager.notify(NOTIFICATION_ID, builder.build());
+        notificationManager.notify(NOTIFICATION_ID, builder.build())
+        Timber.d("Notification shown")
     }
 
     private fun showNotificationForOldVersion(context: Context, title: String, message: String) {

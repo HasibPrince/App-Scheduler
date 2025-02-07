@@ -1,5 +1,6 @@
 *.iml
 .gradle
+.kotlin
 /local.properties
 /.idea/caches
 /.idea/libraries
@@ -7,6 +8,15 @@
 /.idea/workspace.xml
 /.idea/navEditor.xml
 /.idea/assetWizardSettings.xml
+/.idea/appInsightsSettings.xml
+/.idea/aws.xml
+/.idea/gradle.xml
+/.idea/inspectionProfiles/
+/.idea/kotlinc.xml
+/.idea/migrations.xml
+/.idea/misc.xml
+/.idea/runConfigurations.xml
+/.idea/vcs.xml
 .DS_Store
 /build
 /captures
