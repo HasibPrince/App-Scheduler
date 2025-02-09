@@ -9,18 +9,19 @@ import android.os.Build
 object ScheduleManager {
     fun scheduleAppLaunch(
         context: Context,
-        scheduleId: Int,
+        requestCode: Int,
         packageName: String,
         triggerTime: Long
     ) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, AppLaunchReceiver::class.java).apply {
-            putExtra("scheduleId", scheduleId)
             putExtra("packageName", packageName)
+            putExtra("requestCode", requestCode)
         }
+
         val pendingIntent = PendingIntent.getBroadcast(
             context,
-            111,
+            requestCode,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -32,12 +33,24 @@ object ScheduleManager {
                 pendingIntent
             )
         } else {
-            alarmManager.set(
+            alarmManager.setExact(
                 AlarmManager.RTC_WAKEUP,
                 triggerTime,
                 pendingIntent
             )
         }
+    }
 
+    fun cancelSchedule(context: Context, requestCode: Int) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, AppLaunchReceiver::class.java)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            requestCode,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        alarmManager.cancel(pendingIntent)
     }
 }

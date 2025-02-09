@@ -9,6 +9,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.os.PowerManager
 import android.provider.Settings
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
@@ -33,20 +34,19 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        intent.getStringExtra("package")?.let {
-            Timber.d("Package name: $it")
-            val launchIntent = packageManager.getLaunchIntentForPackage(it)
-            if (launchIntent != null) {
-                startActivity(launchIntent)
-                Timber.d("Launch Intent")
-            } else {
-                Timber.d("Launch intent is null")
-            }
-        }
+
         window.apply {
             addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             addFlags(WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON)
         }
+
+        window.addFlags(
+            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN
+        )
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
             setTurnScreenOn(true)
@@ -64,32 +64,60 @@ class MainActivity : ComponentActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
             openAlarmsAndRemindersSettings(this)
         }
+
+
+//        if (!isBatteryOptimizationIgnored()) {
+//            requestDisableBatteryOptimization(this)
+//        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            managePermissions()
+        }
     }
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 101) {
-            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
-                // Permission granted, proceed with your logic
-                getInstalledApps()
+    fun requestDisableBatteryOptimization(context: Context) {
+        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
+            data = Uri.parse("package:${context.packageName}")
+        }
+        context.startActivity(intent)
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        intent.getStringExtra("package")?.let {
+            Timber.d("Package name: $it")
+            val launchIntent = packageManager.getLaunchIntentForPackage(it)
+            if (launchIntent != null) {
+                startActivity(launchIntent)
+                Timber.d("Launch Intent")
             } else {
-                // Permission denied, handle accordingly
-                Timber.d("Permission denied")
+                Timber.d("Launch intent is null")
             }
         }
     }
 
-    private fun getInstalledApps() {
-        val installedPackages: List<PackageInfo> = packageManager.getInstalledPackages(PackageManager.GET_META_DATA)
-        for (packageInfo in installedPackages) {
-            val packageName = packageInfo.packageName
-            Timber.d("Package Name: $packageName")
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun managePermissions() {
+        val permissions = arrayOf(
+            Manifest.permission.POST_NOTIFICATIONS,
+        )
+
+        if (isPermissionsGranted()) {
+
+        } else {
+            ActivityCompat.requestPermissions(
+                this, permissions, 1001
+            )
         }
     }
+
+
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun isPermissionsGranted(): Boolean = ContextCompat.checkSelfPermission(
+        this,
+        Manifest.permission.POST_NOTIFICATIONS
+    ) == PackageManager.PERMISSION_GRANTED
 
 
     @RequiresApi(Build.VERSION_CODES.S)

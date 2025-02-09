@@ -5,11 +5,13 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.hasib.appscheduler.data.model.AppSchedule
+import com.hasib.appscheduler.data.model.Records
 
-@Database(entities = [AppSchedule::class], version = 1, exportSchema = false)
+@Database(entities = [AppSchedule::class, Records::class], version = 1, exportSchema = false)
 abstract class AppScheduleDatabase : RoomDatabase() {
 
     abstract fun scheduleDao(): ScheduleDao
+    abstract fun recordsDao(): RecordsDao
 
     companion object {
         const val DATABASE_NAME = "appSchedule_database"

@@ -3,11 +3,10 @@ package com.hasib.appscheduler.data.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "schedules")
-data class AppSchedule(
+@Entity(tableName = "records")
+data class Records(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val appName: String,
     val packageName: String,
-    val scheduleTime: Long = -1,
+    val executionTime: Long,
 )

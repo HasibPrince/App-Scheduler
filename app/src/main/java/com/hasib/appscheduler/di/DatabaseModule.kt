@@ -3,6 +3,7 @@ package com.hasib.appscheduler.di
 import android.app.Application
 import android.content.Context
 import com.hasib.appscheduler.data.database.AppScheduleDatabase
+import com.hasib.appscheduler.data.database.RecordsDao
 import com.hasib.appscheduler.data.database.ScheduleDao
 import dagger.Module
 import dagger.Provides
@@ -16,7 +17,13 @@ import javax.inject.Singleton
 object DatabaseModule {
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): ScheduleDao {
+    fun provideScheduleDao(@ApplicationContext context: Context): ScheduleDao {
         return AppScheduleDatabase.getDatabase(context).scheduleDao()
+    }
+
+    @Provides
+    @Singleton
+    fun provideRecordsDao(@ApplicationContext context: Context): RecordsDao {
+        return AppScheduleDatabase.getDatabase(context).recordsDao()
     }
 }

@@ -14,12 +14,17 @@ import com.hasib.appscheduler.R
 import timber.log.Timber
 
 private const val NOTIFICATION_CHANNEL_ID = "SCHEDULER_NOTIFICATION_CHANNEL"
-private const val NOTIFICATION_ID = 3737
 
 object NotificationViewer {
-    fun showNotification(context: Context, title: String, message: String, packageName: String) {
+    fun showNotification(
+        context: Context,
+        notificationCode: Int,
+        title: String,
+        message: String,
+        packageName: String
+    ) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            showNotificationForOldVersion(context, title, message)
+            showNotificationForOldVersion(context, notificationCode, title, message)
             return
         }
 
@@ -36,7 +41,7 @@ object NotificationViewer {
             context,
             MainActivity::class.java
         ).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 
         launchIntent.putExtra("package", packageName)
@@ -45,7 +50,7 @@ object NotificationViewer {
 
         val pendingIntent = PendingIntent.getActivity(
             context,
-            1,
+            System.currentTimeMillis().toInt(),
             launchIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
@@ -55,16 +60,20 @@ object NotificationViewer {
         builder.setContentIntent(pendingIntent);
         builder.setFullScreenIntent(pendingIntent, true)
         builder.setCategory(NotificationCompat.CATEGORY_ALARM)
-
         builder.setSmallIcon(R.drawable.ic_launcher_foreground);
         builder.setContentTitle(title);
         builder.setContentText(message)
 
-        notificationManager.notify(NOTIFICATION_ID, builder.build())
+        notificationManager.notify(notificationCode, builder.build())
         Timber.d("Notification shown")
     }
 
-    private fun showNotificationForOldVersion(context: Context, title: String, message: String) {
+    private fun showNotificationForOldVersion(
+        context: Context,
+        notificationCode: Int,
+        title: String,
+        message: String
+    ) {
         val notificationManager =
             context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
 
@@ -77,6 +86,6 @@ object NotificationViewer {
             .setAutoCancel(false)
             .build()
 
-        notificationManager.notify(NOTIFICATION_ID, notification)
+        notificationManager.notify(notificationCode, notification)
     }
 }
