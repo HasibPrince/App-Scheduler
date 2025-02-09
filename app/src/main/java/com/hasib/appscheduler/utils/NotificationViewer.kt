@@ -18,13 +18,13 @@ private const val NOTIFICATION_CHANNEL_ID = "SCHEDULER_NOTIFICATION_CHANNEL"
 object NotificationViewer {
     fun showNotification(
         context: Context,
-        notificationCode: Int,
+        notificationId: Int,
         title: String,
         message: String,
         packageName: String
     ) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-            showNotificationForOldVersion(context, notificationCode, title, message)
+            showNotificationForOldVersion(context, notificationId, title, message)
             return
         }
 
@@ -64,7 +64,7 @@ object NotificationViewer {
         builder.setContentTitle(title);
         builder.setContentText(message)
 
-        notificationManager.notify(notificationCode, builder.build())
+        notificationManager.notify(notificationId, builder.build())
         Timber.d("Notification shown")
     }
 
@@ -87,5 +87,11 @@ object NotificationViewer {
             .build()
 
         notificationManager.notify(notificationCode, notification)
+    }
+
+    fun cancelNotification(context: Context, notificationCode: Int) {
+        val notificationManager =
+            context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+        notificationManager.cancel(notificationCode)
     }
 }

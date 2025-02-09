@@ -26,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.hasib.appscheduler.theme.StartupTheme
+import com.hasib.appscheduler.utils.NotificationViewer
 import dagger.hilt.android.AndroidEntryPoint
 import timber.log.Timber
 
@@ -39,13 +40,6 @@ class MainActivity : ComponentActivity() {
             addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
             addFlags(WindowManager.LayoutParams.FLAG_ALLOW_LOCK_WHILE_SCREEN_ON)
         }
-
-        window.addFlags(
-            WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON or
-                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or
-                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON or
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN
-        )
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
             setShowWhenLocked(true)
@@ -94,6 +88,12 @@ class MainActivity : ComponentActivity() {
             } else {
                 Timber.d("Launch intent is null")
             }
+        }
+        intent.getIntExtra("requestCode", -1).let {
+            if (it == -1) {
+                return
+            }
+            NotificationViewer.cancelNotification(this.applicationContext, it)
         }
     }
 

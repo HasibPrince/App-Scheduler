@@ -49,9 +49,11 @@ class PackageInfoRepository @Inject constructor(
                 packageName = appInfo.packageName,
                 scheduleTime = appInfo.scheduledTime ?: -1,
             )
+        } else if (appInfo.scheduledTime != null) {
+            appSchedule.scheduleTime = appInfo.scheduledTime!!
         }
 
-        if (appSchedule.scheduleTime < 0 || appSchedule.id == -1 || appSchedule.appName.isEmpty()) {
+        if (appSchedule.scheduleTime < 0 || appSchedule.id < 0 || appSchedule.appName.isEmpty()) {
             throw IllegalStateException("Scheduled time or app info is invalid : $appSchedule")
         }
 
@@ -68,8 +70,17 @@ class PackageInfoRepository @Inject constructor(
     }
 
     suspend fun updateAppSchedule(packageName: String) {
-        val appInfo = AppInfo(-1, "", packageName)
-        setAppSchedule(appInfo)
+        val appSchedule = scheduleDao.getScheduleByPackageName(packageName)
+        if (appSchedule == null) {
+            throw IllegalStateException("Schedule not found for package: $packageName")
+        }
+
+        ScheduleManager.scheduleAppLaunch(
+            context,
+            appSchedule.id,
+            appSchedule.packageName,
+            getNextTimestampInMillis(appSchedule.scheduleTime)
+        )
     }
 
 
@@ -97,7 +108,7 @@ class PackageInfoRepository @Inject constructor(
 
         if (targetTimestamp - now.timeInMillis < 60000) {
             if (BuildConfig.DEBUG) {
-                targetTimestamp = now.timeInMillis + (1000 * 600)
+                targetTimestamp = now.timeInMillis + (1000 * 60)
             } else {
                 targetTimestamp += 24 * 3600 * 1000
             }
@@ -115,5 +126,9 @@ class PackageInfoRepository @Inject constructor(
             set(Calendar.MILLISECOND, 0)
         }
         return calendar.timeInMillis
+    }
+
+    suspend fun getRecordList(packageName: String): List<Records> {
+        return recordsDao.getRecordsByPackageName(packageName)
     }
 }
