@@ -31,7 +31,7 @@ fun AppSchedulerApp(viewModel: AppSchedulerViewModel = viewModel()) {
             modifier = Modifier.fillMaxSize().padding(innerPadding),
             contentPadding = PaddingValues(16.dp)
         ) {
-            items(appList) {
+            items(appList, key = { it.appInfo.packageName }) {
                 AppListItem(app = it, onScheduleUpdated = { app, date, time ->
                     viewModel.setSchedule(app, date, time)
                 }) {

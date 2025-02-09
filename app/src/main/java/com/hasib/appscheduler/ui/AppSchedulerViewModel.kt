@@ -45,15 +45,18 @@ class AppSchedulerViewModel @Inject constructor(
             val scheduleTimeInMillis = convertTimeToMillis(time)
             appInfoUiModel.appInfo.scheduledTime = scheduleTimeInMillis
             packageInfoRepository.setAppSchedule(appInfoUiModel.appInfo)
+
+            val index = _appsStateList.indexOf(appInfoUiModel)
+            _appsStateList[index] = appInfoUiModel.copy(formattedScheduledTime = formatTimestampToDateTime(scheduleTimeInMillis))
             Timber.d("Current Time: ${System.currentTimeMillis()} Scheduled Time: $scheduleTimeInMillis")
-            getPackageInfo()
         }
     }
 
     fun deleteSchedule(appInfoUiModel: AppInfoUiModel) {
         viewModelScope.launch {
             packageInfoRepository.deleteSchedule(appInfoUiModel.appInfo)
-            getPackageInfo()
+            val index = _appsStateList.indexOf(appInfoUiModel)
+            _appsStateList[index] = appInfoUiModel.copy(formattedScheduledTime = null)
         }
     }
 

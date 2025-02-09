@@ -15,7 +15,6 @@ import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import java.util.UUID
 import javax.inject.Inject
 
 class PackageInfoRepository @Inject constructor(
@@ -29,15 +28,11 @@ class PackageInfoRepository @Inject constructor(
         val scheduledApps = scheduleDao.getAllSchedules()
         return installedPackages.map { packageInfo ->
             var appName = context.packageManager.getApplicationLabel(packageInfo).toString()
-            val uniqueNumber = UUID.randomUUID().mostSignificantBits.hashCode()
             val packageName = packageInfo.packageName
-            val scheduledTime = scheduledApps.find { it.packageName == packageName }?.scheduleTime
+            val scheduledApp = scheduledApps.find { it.packageName == packageName }
+            val scheduledTime = scheduledApp?.scheduleTime
 
-            recordsDao.getRecordsByPackageName(packageName).forEach {
-                Timber.d("Record: $it")
-            }
-
-            AppInfo(uniqueNumber, appName, packageName, scheduledTime)
+            AppInfo(scheduledApp?.id ?: 0, appName, packageName, scheduledTime)
         }
     }
 
@@ -61,11 +56,13 @@ class PackageInfoRepository @Inject constructor(
         }
 
         scheduleDao.insert(appSchedule)
+        appSchedule = scheduleDao.getScheduleByPackageName(appInfo.packageName)
+            ?: throw IllegalStateException("Schedule not found for package: ${appInfo.packageName}")
 
         ScheduleManager.scheduleAppLaunch(
             context,
             appSchedule.id,
-            appInfo.packageName,
+            appSchedule.packageName,
             getNextTimestampInMillis(appSchedule.scheduleTime)
         )
     }
@@ -77,9 +74,12 @@ class PackageInfoRepository @Inject constructor(
 
 
     suspend fun deleteSchedule(appInfo: AppInfo) {
-        ScheduleManager.cancelSchedule(context, appInfo.id)
+        val appSchedule = scheduleDao.getScheduleByPackageName(packageName = appInfo.packageName)
+        if (appSchedule == null) {
+            throw IllegalStateException("${appInfo.packageName} cannot be deleted, Not available in database")
+        }
+        ScheduleManager.cancelSchedule(context, appSchedule.packageName, appSchedule.id)
         scheduleDao.delete(appInfo.packageName)
-        recordsDao.deleteRecordsByPackageName(appInfo.packageName)
     }
 
     suspend fun saveScheduleRecord(packageName: String) {
