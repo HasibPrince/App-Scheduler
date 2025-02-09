@@ -7,13 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.hasib.appscheduler.data.repositories.PackageInfoRepository
 import com.hasib.appscheduler.ui.model.AppInfoUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 import javax.inject.Inject
 
 @HiltViewModel
@@ -42,8 +42,9 @@ class AppSchedulerViewModel @Inject constructor(
     fun setSchedule(appInfoUiModel: AppInfoUiModel, date: Long, time: String) {
         viewModelScope.launch {
             Timber.d("Date: $date Time: $time")
-            val scheduleTimeInMillis = convertTimeToMillis(date, time)
-            packageInfoRepository.insertSchedule(appInfoUiModel.appInfo, scheduleTimeInMillis)
+            val scheduleTimeInMillis = convertTimeToMillis(time)
+            appInfoUiModel.appInfo.scheduledTime = scheduleTimeInMillis
+            packageInfoRepository.setAppSchedule(appInfoUiModel.appInfo)
             Timber.d("Current Time: ${System.currentTimeMillis()} Scheduled Time: $scheduleTimeInMillis")
             getPackageInfo()
         }
@@ -58,22 +59,24 @@ class AppSchedulerViewModel @Inject constructor(
 
     private fun formatTimestampToDateTime(timestamp: Long?): String? {
         if (timestamp == null) return null
-        val sdf = SimpleDateFormat("dd-MM-yyyy HH:mm", Locale.getDefault())
-        return sdf.format(Date(timestamp))
+
+        val timeInMin = timestamp / (1000L * 60)
+        val hours = timeInMin / 60
+        val minutes = timeInMin % 60
+        Timber.d("Current TimeZone: ${TimeZone.getDefault()}")
+        Timber.d("Parsed Time: $hours : $minutes")
+
+        return "$hours : $minutes"
+
     }
 
-    private fun convertTimeToMillis(dateInMilli: Long,time: String): Long {
+    private fun convertTimeToMillis(time: String): Long {
         val parts = time.split(":")
         if (parts.size != 2) return 0L
 
         val hours = parts[0].trim().toIntOrNull() ?: return 0L
         val minutes = parts[1].trim().toIntOrNull() ?: return 0L
 
-        val timeInMillis = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, hours)
-            set(Calendar.MINUTE, minutes)
-        }.timeInMillis
-        Timber.d("Selected time: ${formatTimestampToDateTime(timeInMillis)}")
-        return timeInMillis
+        return (hours * 3600 * 1000L) + (minutes * 60 * 1000L)
     }
 }

@@ -9,5 +9,5 @@ data class AppSchedule(
     val id: Int = 0,
     val appName: String,
     val packageName: String,
-    val scheduleTime: Long = -1,
+    var scheduleTime: Long = -1,
 )

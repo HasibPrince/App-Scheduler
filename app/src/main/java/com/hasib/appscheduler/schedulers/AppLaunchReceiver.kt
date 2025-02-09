@@ -29,6 +29,7 @@ class AppLaunchReceiver : BroadcastReceiver() {
         Timber.d( "Received intent to launch app: $packageName requestCode: $requestCode")
         coroutineScope.launch {
             packageInfoRepository.saveScheduleRecord(packageName)
+            packageInfoRepository.updateAppSchedule(packageName)
         }
 
         NotificationViewer.showNotification(

@@ -79,7 +79,7 @@ fun AppListItem(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Button(
-                    onClick = { showDialog = true }
+                    onClick = { showTimePickerDialog = true }
                 ) {
                     Text(text = app.formattedScheduledTime ?: "Set Schedule")
                 }
@@ -102,7 +102,7 @@ fun AppListItem(
         }
     }
 
-    if (showDialog) {
+    if (false) {
         DatePickerDialog(
             onDismissRequest = { showDialog = false },
             confirmButton = {
