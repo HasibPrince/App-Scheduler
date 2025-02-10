@@ -8,9 +8,9 @@ A clean and responsive Android application for Scheduling Apps.
 
 ---
 
-App Download link: https://drive.google.com/file/d/1AA5N0chObN1ORRhibvH6t5GcAD8MD9K1/view?usp=sharing
+[App Download link](https://drive.google.com/file/d/1AA5N0chObN1ORRhibvH6t5GcAD8MD9K1/view?usp=sharing)
 
-Debug build download link: https://drive.google.com/file/d/1YM6_r32fuqcyTHdQTgxtxLLWA7Y1MiJh/view?usp=sharing
+[Debug build download link](https://drive.google.com/file/d/1YM6_r32fuqcyTHdQTgxtxLLWA7Y1MiJh/view?usp=sharing)
 
 ***Debug build will serve 3 minute repeat interval instead of 24 hours to make the testing convenient***
 
