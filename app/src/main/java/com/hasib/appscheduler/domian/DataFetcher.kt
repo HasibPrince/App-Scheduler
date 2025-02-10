@@ -3,7 +3,7 @@ package com.hasib.appscheduler.domian
 import com.hasib.appscheduler.domian.model.Result
 import kotlinx.coroutines.CancellationException
 
-suspend fun <T> handleDataFetch(apiCall: suspend () -> T): Result<T> {
+suspend fun <T> handleOperation(apiCall: suspend () -> T): Result<T> {
     return try {
         val response = apiCall()
         Result.Success(response)

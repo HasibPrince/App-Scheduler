@@ -2,6 +2,7 @@ package com.hasib.appscheduler.data.model
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.hasib.appscheduler.domian.model.AppInfo
 
 @Entity(tableName = "schedules")
 data class AppSchedule(
@@ -11,3 +12,7 @@ data class AppSchedule(
     val packageName: String,
     var scheduleTime: Long = -1,
 )
+
+fun AppSchedule.toAppInfo(): AppInfo {
+    return AppInfo(id, appName, packageName, scheduleTime)
+}
