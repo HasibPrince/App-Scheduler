@@ -90,11 +90,14 @@ class MainActivity : ComponentActivity() {
             }
         }
         intent.getIntExtra("requestCode", -1).let {
+            Timber.d("Request code: $it")
             if (it == -1) {
                 return
             }
             NotificationViewer.cancelNotification(this.applicationContext, it)
         }
+
+        finish()
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)

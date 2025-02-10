@@ -45,6 +45,7 @@ object NotificationViewer {
         }
 
         launchIntent.putExtra("package", packageName)
+        launchIntent.putExtra("requestCode", notificationId)
 
         Timber.d("Launch intent created: $launchIntent")
 
@@ -90,6 +91,7 @@ object NotificationViewer {
     }
 
     fun cancelNotification(context: Context, notificationCode: Int) {
+        Timber.d("Cancelling notification for: $notificationCode")
         val notificationManager =
             context.getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.cancel(notificationCode)
