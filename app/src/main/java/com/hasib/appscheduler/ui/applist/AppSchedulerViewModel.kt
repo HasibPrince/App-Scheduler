@@ -1,4 +1,4 @@
-package com.hasib.appscheduler.ui
+package com.hasib.appscheduler.ui.applist
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList

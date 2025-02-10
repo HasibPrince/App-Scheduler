@@ -1,4 +1,4 @@
-package com.hasib.appscheduler.ui
+package com.hasib.appscheduler.ui.reocrdsList
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
