@@ -8,10 +8,15 @@ A clean and responsive Android application for Scheduling Apps.
 
 ---
 
-App Download link:
+App Download link: https://drive.google.com/file/d/1AA5N0chObN1ORRhibvH6t5GcAD8MD9K1/view?usp=sharing
+
+Debug build download link: https://drive.google.com/file/d/1YM6_r32fuqcyTHdQTgxtxLLWA7Y1MiJh/view?usp=sharing
+
+***Debug build will serve 3 minute repeat interval instead of 24 hours to make the testing convenient***
 
 ## Table of Contents
 
+- [Screenshots](#screenshots)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)  
@@ -23,14 +28,20 @@ App Download link:
 
 ---
 
+## 📸 Screenshots  
+
+| Home | Records List |
+|---------|---------|
+| ![Home page](screenshots/screenshot-1.png) | ![Record page](screenshots/screenshot-2.png) |
 
 ## Tech Stack
 
 - **Programming Language:** Kotlin
-- **UI Framework:** Material UI Library, XML
+- **UI Framework:** Jetpack compose with Material UI
 - **Architecture:** MVVM + Clean Architecture
 - **Dependency Injection:** Hilt
 - **Database:** Room
+- **Scheduler API**: AlarmManager
 - **Asynchronous Tasks:** Kotlin Coroutines
 
 ## Architecture
@@ -78,13 +89,13 @@ This project follows **MVVM (Model-View-ViewModel)** architecture to ensure a cl
   
 ## Installation
 
-Install the apk from here:
+Install the apk from here: https://drive.google.com/file/d/1AA5N0chObN1ORRhibvH6t5GcAD8MD9K1/view?usp=sharing
 
 Or
 
 1. Clone the repository:
    ```bash
-   git clone git@github.com:HasibPrince/Caller-Id.git
+   git@github.com:HasibPrince/App-Scheduler.git
    ```
 
 2. Open the project in Android Studio.
