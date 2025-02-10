@@ -5,6 +5,8 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import com.hasib.appscheduler.ui.PACKAGE_NAME
+import com.hasib.appscheduler.ui.REQUEST_CODE
 import timber.log.Timber
 
 object ScheduleManager {
@@ -16,8 +18,8 @@ object ScheduleManager {
     ) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, AppLaunchReceiver::class.java).apply {
-            putExtra("packageName", packageName)
-            putExtra("requestCode", requestCode)
+            putExtra(PACKAGE_NAME, packageName)
+            putExtra(REQUEST_CODE, requestCode)
         }
 
         Timber.d("Scheduling app launch with requestcode: $requestCode for $packageName at $triggerTime")
@@ -49,8 +51,8 @@ object ScheduleManager {
     fun cancelSchedule(context: Context, packageName: String, requestCode: Int) {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, AppLaunchReceiver::class.java).apply {
-            putExtra("packageName", packageName)
-            putExtra("requestCode", requestCode)
+            putExtra(PACKAGE_NAME, packageName)
+            putExtra(REQUEST_CODE, requestCode)
         }
 
         Timber.d("Cancelling app launch with requestcode: $requestCode for $packageName")

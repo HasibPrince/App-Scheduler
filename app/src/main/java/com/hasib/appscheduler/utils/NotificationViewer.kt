@@ -9,8 +9,10 @@ import android.content.Context.NOTIFICATION_SERVICE
 import android.content.Intent
 import android.os.Build
 import androidx.core.app.NotificationCompat
-import com.hasib.appscheduler.ui.MainActivity
 import com.hasib.appscheduler.R
+import com.hasib.appscheduler.ui.MainActivity
+import com.hasib.appscheduler.ui.PACKAGE_NAME
+import com.hasib.appscheduler.ui.REQUEST_CODE
 import timber.log.Timber
 
 private const val NOTIFICATION_CHANNEL_ID = "SCHEDULER_NOTIFICATION_CHANNEL"
@@ -44,8 +46,8 @@ object NotificationViewer {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 
-        launchIntent.putExtra("package", packageName)
-        launchIntent.putExtra("requestCode", notificationId)
+        launchIntent.putExtra(PACKAGE_NAME, packageName)
+        launchIntent.putExtra(REQUEST_CODE, notificationId)
 
         Timber.d("Launch intent created: $launchIntent")
 

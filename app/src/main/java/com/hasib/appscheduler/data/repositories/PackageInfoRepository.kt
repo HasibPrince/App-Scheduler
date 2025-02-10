@@ -7,7 +7,6 @@ import com.hasib.appscheduler.BuildConfig
 import com.hasib.appscheduler.data.database.RecordsDao
 import com.hasib.appscheduler.data.database.ScheduleDao
 import com.hasib.appscheduler.data.model.AppSchedule
-import com.hasib.appscheduler.data.model.Records
 import com.hasib.appscheduler.domian.model.AppInfo
 import com.hasib.appscheduler.schedulers.ScheduleManager
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -93,11 +92,6 @@ class PackageInfoRepository @Inject constructor(
         scheduleDao.delete(appInfo.packageName)
     }
 
-    suspend fun saveScheduleRecord(packageName: String) {
-        val record = Records(packageName = packageName, executionTime = System.currentTimeMillis())
-        recordsDao.insertRecord(record)
-    }
-
     private fun getNextTimestampInMillis(timeInMillis: Long): Long {
         val format = SimpleDateFormat("HH:mm", Locale.getDefault())
         format.isLenient = false
@@ -126,9 +120,5 @@ class PackageInfoRepository @Inject constructor(
             set(Calendar.MILLISECOND, 0)
         }
         return calendar.timeInMillis
-    }
-
-    suspend fun getRecordList(packageName: String): List<Records> {
-        return recordsDao.getRecordsByPackageName(packageName)
     }
 }

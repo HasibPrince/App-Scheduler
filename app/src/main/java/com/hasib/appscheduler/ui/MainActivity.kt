@@ -4,25 +4,16 @@ import android.Manifest
 import android.app.AlarmManager
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.os.PowerManager
 import android.provider.Settings
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.hasib.appscheduler.theme.StartupTheme
@@ -59,37 +50,23 @@ class MainActivity : ComponentActivity() {
             openAlarmsAndRemindersSettings(this)
         }
 
-
-//        if (!isBatteryOptimizationIgnored()) {
-//            requestDisableBatteryOptimization(this)
-//        }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             managePermissions()
         }
     }
 
-    fun requestDisableBatteryOptimization(context: Context) {
-        val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-            data = Uri.parse("package:${context.packageName}")
-        }
-        context.startActivity(intent)
-    }
-
 
     override fun onResume() {
         super.onResume()
-        intent.getStringExtra("package")?.let {
-            Timber.d("Package name: $it")
+        intent.getStringExtra(PACKAGE_NAME)?.let {
+            Timber.d("Opening app for Package name: $it")
             val launchIntent = packageManager.getLaunchIntentForPackage(it)
             if (launchIntent != null) {
                 startActivity(launchIntent)
-                Timber.d("Launch Intent")
-            } else {
-                Timber.d("Launch intent is null")
             }
         }
-        intent.getIntExtra("requestCode", -1).let {
+
+        intent.getIntExtra(REQUEST_CODE, -1).let {
             Timber.d("Request code: $it")
             if (it == -1) {
                 return

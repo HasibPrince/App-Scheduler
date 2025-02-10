@@ -4,16 +4,11 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.hasib.appscheduler.data.model.Records
 import com.hasib.appscheduler.data.repositories.PackageInfoRepository
 import com.hasib.appscheduler.ui.model.AppInfoUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
 import java.util.TimeZone
 import javax.inject.Inject
 
@@ -24,8 +19,6 @@ class AppSchedulerViewModel @Inject constructor(
 
     private val _appsStateList = mutableStateListOf<AppInfoUiModel>()
     val appsStateList: SnapshotStateList<AppInfoUiModel> get() = _appsStateList
-
-    val recordsStateList = mutableStateListOf<Records>()
 
     init {
         getPackageInfo()
@@ -84,12 +77,5 @@ class AppSchedulerViewModel @Inject constructor(
         val minutes = parts[1].trim().toIntOrNull() ?: return 0L
 
         return (hours * 3600 * 1000L) + (minutes * 60 * 1000L)
-    }
-
-    fun fetchRecords(packageName: String) {
-        viewModelScope.launch {
-            recordsStateList.clear()
-            recordsStateList.addAll(packageInfoRepository.getRecordList(packageName))
-        }
     }
 }

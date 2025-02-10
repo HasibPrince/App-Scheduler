@@ -8,7 +8,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,8 +19,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.hasib.appscheduler.data.model.Records
 import com.hasib.appscheduler.ui.model.AppInfoUiModel
+import com.hasib.appscheduler.ui.model.RecordsUIModel
 import kotlinx.serialization.Serializable
 import timber.log.Timber
 import java.util.Calendar
@@ -30,7 +29,7 @@ import java.util.Calendar
 object AppList
 
 @Serializable
-data class RecordList (val packageName: String)
+data class RecordList (val packageName: String, val appName: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,14 +48,13 @@ fun AppContainer(innerPadding: PaddingValues) {
     NavHost(navController = navController, startDestination = AppList) {
         composable<AppList> {
             val appScheduleViewModel: AppSchedulerViewModel = hiltViewModel()
-            AppListPage(innerPadding, appScheduleViewModel) {
-                navController.navigate(RecordList(it))
+            AppListPage(innerPadding, appScheduleViewModel) { packageName, appName ->
+                navController.navigate(RecordList(packageName, appName))
             }
         }
         composable<RecordList> {
             val recordList: RecordList = it.toRoute()
-            val appScheduleViewModel: AppSchedulerViewModel = hiltViewModel()
-            RecordListPage(recordList.packageName, innerPadding, appScheduleViewModel)
+            RecordListPage(recordList.packageName, recordList.appName, innerPadding)
         }
     }
 }
@@ -65,27 +63,32 @@ fun AppContainer(innerPadding: PaddingValues) {
 fun AppListPage(
     innerPadding: PaddingValues,
     viewModel: AppSchedulerViewModel,
-    onNavigateToRecordList: (String) -> Unit
+    onNavigateToRecordList: (String, String) -> Unit
 ) {
     AppList(innerPadding, viewModel, onNavigateToRecordList)
 }
 
 @Composable
-fun RecordListPage(packageName: String, innerPadding: PaddingValues, viewModel: AppSchedulerViewModel) {
+fun RecordListPage(packageName: String, appName: String, innerPadding: PaddingValues, viewModel: RecordsViewModel = hiltViewModel()) {
     viewModel.fetchRecords(packageName)
     val records = viewModel.recordsStateList
-    LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(innerPadding),
-        contentPadding = PaddingValues(16.dp)
-    ) {
-        items(records) {
-            AppItem(it)
+    Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+            Text(text = appName, style = MaterialTheme.typography.headlineMedium)
+        }
+        LazyColumn(
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 8.dp)
+        ) {
+            items(records) {
+                AppItem(it)
+            }
         }
     }
+
 }
 
 @Composable
-fun AppItem(record: Records) {
+fun AppItem(record: RecordsUIModel) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -96,10 +99,9 @@ fun AppItem(record: Records) {
             modifier = Modifier
                 .padding(16.dp)
         ) {
-            Text(text = "App Name: ${record.packageName}", style = MaterialTheme.typography.bodyLarge)
-            Text(text = "Package Name: ${record.packageName}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Package Name: ${record.records.packageName}", style = MaterialTheme.typography.bodyMedium)
             Text(
-                text = "Scheduled Time: ${record.executionTime}",
+                text = "Scheduled Time: ${record.formattedTimeStamp}",
                 style = MaterialTheme.typography.bodyMedium
             )
         }
@@ -111,7 +113,7 @@ fun AppItem(record: Records) {
 private fun AppList(
     innerPadding: PaddingValues,
     viewModel: AppSchedulerViewModel = viewModel(),
-    onNavigateToRecordList: (String) -> Unit
+    onNavigateToRecordList: (String, String) -> Unit
 ) {
     val appList = viewModel.appsStateList
     LazyColumn(
@@ -133,7 +135,7 @@ private fun AppList(
 fun AppListItem(
     app: AppInfoUiModel,
     onScheduleUpdated: (AppInfoUiModel, Long, String) -> Unit,
-    onNavigateToRecordList: (String) -> Unit,
+    onNavigateToRecordList: (String, String) -> Unit,
     onDelete: (AppInfoUiModel) -> Unit
 ) {
     var showDialog by remember { mutableStateOf(false) }
@@ -146,7 +148,7 @@ fun AppListItem(
             .fillMaxWidth()
             .padding(vertical = 8.dp)
             .clickable {
-                onNavigateToRecordList.invoke(app.appInfo.packageName)
+                onNavigateToRecordList.invoke(app.appInfo.packageName, app.appInfo.appName)
             },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
