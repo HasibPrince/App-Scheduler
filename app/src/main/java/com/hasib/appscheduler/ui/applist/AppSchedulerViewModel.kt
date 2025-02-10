@@ -35,9 +35,9 @@ class AppSchedulerViewModel @Inject constructor(
         }
     }
 
-    fun setSchedule(appInfoUiModel: AppInfoUiModel, date: Long, time: String) {
+    fun setSchedule(appInfoUiModel: AppInfoUiModel, time: String) {
         viewModelScope.launch {
-            Timber.d("Date: $date Time: $time")
+            Timber.d("Selected Time for ${appInfoUiModel.appInfo.packageName}: $time")
             val scheduleTimeInMillis = convertTimeToMillis(time)
             appInfoUiModel.appInfo.scheduledTime = scheduleTimeInMillis
             packageInfoRepository.setAppSchedule(appInfoUiModel.appInfo)

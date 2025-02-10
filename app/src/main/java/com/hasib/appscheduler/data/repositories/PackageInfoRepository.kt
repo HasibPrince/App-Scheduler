@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import com.hasib.appscheduler.BuildConfig
-import com.hasib.appscheduler.data.database.RecordsDao
 import com.hasib.appscheduler.data.database.ScheduleDao
 import com.hasib.appscheduler.data.model.AppSchedule
 import com.hasib.appscheduler.domian.model.AppInfo
@@ -19,20 +18,20 @@ import javax.inject.Inject
 class PackageInfoRepository @Inject constructor(
     @ApplicationContext private val context: Context,
     private val scheduleDao: ScheduleDao,
-    private val recordsDao: RecordsDao
 ) {
     suspend fun getInstalledApps(): List<AppInfo> {
         val installedPackages: List<ApplicationInfo> =
             context.packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
         val scheduledApps = scheduleDao.getAllSchedules()
-        return installedPackages.map { packageInfo ->
-            var appName = context.packageManager.getApplicationLabel(packageInfo).toString()
-            val packageName = packageInfo.packageName
-            val scheduledApp = scheduledApps.find { it.packageName == packageName }
-            val scheduledTime = scheduledApp?.scheduleTime
+        return installedPackages.filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 }
+            .map { packageInfo ->
+                var appName = context.packageManager.getApplicationLabel(packageInfo).toString()
+                val packageName = packageInfo.packageName
+                val scheduledApp = scheduledApps.find { it.packageName == packageName }
+                val scheduledTime = scheduledApp?.scheduleTime
 
-            AppInfo(scheduledApp?.id ?: 0, appName, packageName, scheduledTime)
-        }
+                AppInfo(scheduledApp?.id ?: 0, appName, packageName, scheduledTime)
+            }
     }
 
     suspend fun setAppSchedule(appInfo: AppInfo) {
@@ -97,19 +96,19 @@ class PackageInfoRepository @Inject constructor(
         format.isLenient = false
 
         val now = Calendar.getInstance()
-        var targetTimestamp = getTodayMidnightMillis() + timeInMillis
-        Timber.d("Now: ${now.timeInMillis} Target: $targetTimestamp")
+        var targetTimeStamp = getTodayMidnightMillis() + timeInMillis
+        Timber.d("Now: ${now.timeInMillis} Target: $targetTimeStamp")
 
-        if (targetTimestamp - now.timeInMillis < 60000) {
+        if (targetTimeStamp - now.timeInMillis < 60000) {
             if (BuildConfig.DEBUG) {
-                targetTimestamp = now.timeInMillis + (1000 * 60)
+                targetTimeStamp = now.timeInMillis + (1000 * 60 * 3)
             } else {
-                targetTimestamp += 24 * 3600 * 1000
+                targetTimeStamp += 24 * 3600 * 1000
             }
-            Timber.d("Timestamp moved to next day: Now: ${now.timeInMillis} Target: $targetTimestamp")
+            Timber.d("Timestamp moved to next day: Now: ${now.timeInMillis} Target: $targetTimeStamp")
         }
 
-        return targetTimestamp
+        return targetTimeStamp
     }
 
     private fun getTodayMidnightMillis(): Long {

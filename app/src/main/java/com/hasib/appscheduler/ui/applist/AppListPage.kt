@@ -1,5 +1,10 @@
 package com.hasib.appscheduler.ui.applist
 
+import android.content.Context
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
@@ -27,7 +33,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerState
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,7 +41,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hasib.appscheduler.ui.model.AppInfoUiModel
@@ -64,9 +72,9 @@ private fun AppList(
         contentPadding = PaddingValues(16.dp)
     ) {
         items(appList, key = { it.appInfo.packageName }) {
-            AppListItem(app = it, onScheduleUpdated = { app, date, time ->
-                viewModel.setSchedule(app, date, time)
-            }, onNavigateToRecordList) {
+            AppListItem(app = it, onNavigateToRecordList, onScheduleUpdated = { app, time ->
+                viewModel.setSchedule(app, time)
+            }) {
                 viewModel.deleteSchedule(it)
             }
         }
@@ -77,12 +85,11 @@ private fun AppList(
 @Composable
 fun AppListItem(
     app: AppInfoUiModel,
-    onScheduleUpdated: (AppInfoUiModel, Long, String) -> Unit,
     onNavigateToRecordList: (String, String) -> Unit,
+    onScheduleUpdated: (AppInfoUiModel, String) -> Unit,
     onDelete: (AppInfoUiModel) -> Unit
 ) {
     var showTimePickerDialog by remember { mutableStateOf(false) }
-    val datePickerState = rememberDatePickerState()
     var timePickerState = rememberTimePickerState()
 
     Card(
@@ -94,41 +101,51 @@ fun AppListItem(
             },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = "App Name: ${app.appInfo.appName}",
-                style = MaterialTheme.typography.bodyLarge
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Image(
+                bitmap = getAppIconBitmap(app.appInfo.packageName, LocalContext.current.applicationContext)!!.asImageBitmap(),
+                contentDescription = app.appInfo.appName,
+                modifier = Modifier
+                    .size(85.dp)
+                    .padding(horizontal = 10.dp)
+                    .clip(CircleShape),
             )
-            Text(
-                text = "Package Name: ${app.appInfo.packageName}",
-                style = MaterialTheme.typography.bodyMedium
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+            Column(
+                modifier = Modifier.padding(16.dp)
             ) {
-                Button(
-                    onClick = { showTimePickerDialog = true }
-                ) {
-                    Text(text = app.formattedScheduledTime ?: "Set Schedule")
-                }
+                Text(
+                    text = "App Name: ${app.appInfo.appName}",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+                Text(
+                    text = "Package Name: ${app.appInfo.packageName}",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+                Spacer(modifier = Modifier.height(8.dp))
 
-                if (app.formattedScheduledTime != null) {
-                    IconButton(
-                        onClick = { onDelete(app) },
-                        modifier = Modifier
-                            .size(36.dp)
-                            .align(Alignment.Bottom)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        onClick = { showTimePickerDialog = true }
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = Color.Red
-                        )
+                        Text(text = app.formattedScheduledTime ?: "Set Schedule")
+                    }
+
+                    if (app.formattedScheduledTime != null) {
+                        IconButton(
+                            onClick = { onDelete(app) },
+                            modifier = Modifier
+                                .size(36.dp)
+                                .align(Alignment.Bottom)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = Color.Red
+                            )
+                        }
                     }
                 }
             }
@@ -141,7 +158,7 @@ fun AppListItem(
             val time = "${timePickerState.hour} : ${timePickerState.minute}"
             Timber.d("Time: $time")
             showTimePickerDialog = false
-            onScheduleUpdated.invoke(app, datePickerState.selectedDateMillis ?: -1, time)
+            onScheduleUpdated.invoke(app, time)
         }, onDismiss = {})
     }
 }
@@ -191,4 +208,18 @@ fun TimePickerDialog(
         },
         text = { content() }
     )
+}
+
+fun getAppIconBitmap(packageName: String, context: Context): Bitmap? {
+    val pm = context.packageManager
+    return try {
+        val drawable = pm.getApplicationIcon(packageName)
+        val bitmap = Bitmap.createBitmap(drawable.intrinsicWidth, drawable.intrinsicHeight, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+        drawable.setBounds(0, 0, canvas.width, canvas.height)
+        drawable.draw(canvas)
+        bitmap
+    } catch (e: PackageManager.NameNotFoundException) {
+        null
+    }
 }
