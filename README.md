@@ -8,15 +8,16 @@ A clean and responsive Android application for Scheduling Apps.
 
 ---
 
-App Download link: https://drive.google.com/file/d/1AA5N0chObN1ORRhibvH6t5GcAD8MD9K1/view?usp=sharing
+[App Download link](https://drive.google.com/file/d/1AA5N0chObN1ORRhibvH6t5GcAD8MD9K1/view?usp=sharing)
 
-Debug build download link: https://drive.google.com/file/d/1YM6_r32fuqcyTHdQTgxtxLLWA7Y1MiJh/view?usp=sharing
+[Debug build download link](https://drive.google.com/file/d/1YM6_r32fuqcyTHdQTgxtxLLWA7Y1MiJh/view?usp=sharing)
 
 ***Debug build will serve 3 minute repeat interval instead of 24 hours to make the testing convenient***
 
 ## Table of Contents
 
 - [Screenshots](#screenshots)
+- [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
 - [Project Structure](#project-structure)  
@@ -33,6 +34,13 @@ Debug build download link: https://drive.google.com/file/d/1YM6_r32fuqcyTHdQTgxt
 | Home | Records List |
 |---------|---------|
 | ![Home page](screenshots/screenshot-1.png) | ![Record page](screenshots/screenshot-2.png) |
+
+## Features
+
+- Users can schedule the launch of any installed app, which will automatically repeat daily at the same time.
+- Users can update the scheduled launch time as needed.
+- Users can delete the schedule for any previously scheduled app.
+- Users can view the launch history of any scheduled app by selecting it.
 
 ## Tech Stack
 
