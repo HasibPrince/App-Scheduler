@@ -19,6 +19,7 @@ class PackageInfoRepository @Inject constructor(
         val installedPackages: List<ApplicationInfo> =
             context.packageManager.getInstalledApplications(PackageManager.GET_META_DATA)
         val scheduledApps = scheduleDao.getAllSchedules()
+
         return installedPackages
             .filter { it.flags and ApplicationInfo.FLAG_SYSTEM == 0 }
             .map { packageInfo ->

@@ -7,7 +7,9 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hasib.appscheduler.data.repositories.PackageInfoRepository
+import com.hasib.appscheduler.domian.handleOperation
 import com.hasib.appscheduler.domian.model.doOnError
+import com.hasib.appscheduler.domian.model.doOnSuccess
 import com.hasib.appscheduler.domian.usecases.DeleteAppScheduleUseCase
 import com.hasib.appscheduler.domian.usecases.SetAppScheduleUseCase
 import com.hasib.appscheduler.ui.model.AppInfoUiModel
@@ -38,16 +40,28 @@ class AppSchedulerViewModel @Inject constructor(
     fun getPackageInfo() {
         viewModelScope.launch {
             _appsStateList.clear()
-            val appInfoUiModels = packageInfoRepository.getInstalledApps().map {
-                AppInfoUiModel(it, formatTimestampToDateTime(it.scheduledTime))
+            val appInfoUiModels = handleOperation {
+                getApplicationInfo()
             }
-            appsList.clear()
-            appsList.addAll(appInfoUiModels)
-            _appsStateList.addAll(
-                appInfoUiModels
-            )
+
+            appInfoUiModels.doOnError {
+                errorMessage.value = it.message ?: "Something went wrong"
+            }
+
+            appInfoUiModels.doOnSuccess {
+                appsList.clear()
+                appsList.addAll(it)
+                _appsStateList.addAll(
+                    it
+                )
+            }
         }
     }
+
+    private suspend fun getApplicationInfo(): List<AppInfoUiModel> =
+        packageInfoRepository.getInstalledApps().map {
+            AppInfoUiModel(it, formatTimestampToDateTime(it.scheduledTime))
+        }
 
     fun setSchedule(appInfoUiModel: AppInfoUiModel, time: String) {
         viewModelScope.launch {
