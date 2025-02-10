@@ -93,6 +93,10 @@ Install the apk from here: https://drive.google.com/file/d/1AA5N0chObN1ORRhibvH6
 
 Or
 
+Debug build download link: https://drive.google.com/file/d/1YM6_r32fuqcyTHdQTgxtxLLWA7Y1MiJh/view?usp=sharing
+
+Or
+
 1. Clone the repository:
    ```bash
    git@github.com:HasibPrince/App-Scheduler.git
