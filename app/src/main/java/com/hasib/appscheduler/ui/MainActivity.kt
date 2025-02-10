@@ -57,6 +57,22 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        handlePackageNameExtra()
+        handleRequestCodeExtra()
+    }
+
+    private fun handleRequestCodeExtra() {
+        intent.getIntExtra(REQUEST_CODE, -1).let {
+            Timber.d("Request code: $it")
+            if (it == -1) {
+                return
+            }
+            NotificationViewer.cancelNotification(this.applicationContext, it)
+            finish()
+        }
+    }
+
+    private fun handlePackageNameExtra() {
         intent.getStringExtra(PACKAGE_NAME)?.let {
             Timber.d("Opening app for Package name: $it")
             val launchIntent = packageManager.getLaunchIntentForPackage(it)
@@ -64,16 +80,6 @@ class MainActivity : ComponentActivity() {
                 startActivity(launchIntent)
             }
         }
-
-        intent.getIntExtra(REQUEST_CODE, -1).let {
-            Timber.d("Request code: $it")
-            if (it == -1) {
-                return
-            }
-            NotificationViewer.cancelNotification(this.applicationContext, it)
-        }
-
-        finish()
     }
 
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
@@ -82,11 +88,9 @@ class MainActivity : ComponentActivity() {
             Manifest.permission.POST_NOTIFICATIONS,
         )
 
-        if (isPermissionsGranted()) {
-
-        } else {
+        if (!isPermissionsGranted()) {
             ActivityCompat.requestPermissions(
-                this, permissions, 1001
+                this, permissions, PERMISSION_REQUEST_CODE
             )
         }
     }

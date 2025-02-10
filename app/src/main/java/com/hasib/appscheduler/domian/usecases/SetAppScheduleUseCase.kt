@@ -1,16 +1,11 @@
 package com.hasib.appscheduler.domian.usecases
 
-import com.hasib.appscheduler.BuildConfig
 import com.hasib.appscheduler.domian.handleOperation
 import com.hasib.appscheduler.domian.model.AppInfo
 import com.hasib.appscheduler.domian.model.Result
 import com.hasib.appscheduler.domian.repositories.AppsScheduleManager
 import com.hasib.appscheduler.domian.repositories.AppsSchedulerRepository
 import com.hasib.appscheduler.domian.utils.getNextTimestampInMillis
-import timber.log.Timber
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 import javax.inject.Inject
 
 class SetAppScheduleUseCase @Inject constructor(
