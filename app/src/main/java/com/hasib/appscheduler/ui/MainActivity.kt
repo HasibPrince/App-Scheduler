@@ -38,7 +38,6 @@ class MainActivity : ComponentActivity() {
         }
 
         enableEdgeToEdge()
-        Timber.d("onCreate: MainActivity")
         setContent {
             StartupTheme {
                 AppSchedulerApp()

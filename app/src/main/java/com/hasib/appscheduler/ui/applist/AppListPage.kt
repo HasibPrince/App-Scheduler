@@ -174,7 +174,6 @@ fun AppListItem(
         DialWithDialogExample(onConfirm = {
             timePickerState = it
             val time = "${timePickerState.hour} : ${timePickerState.minute}"
-            Timber.d("Time: $time")
             showTimePickerDialog = false
             onScheduleUpdated.invoke(app, time)
         }, onDismiss = {

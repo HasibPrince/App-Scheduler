@@ -75,7 +75,6 @@ class AppSchedulerViewModel @Inject constructor(
         val timeInMin = timestamp / (1000L * 60)
         val hours = timeInMin / 60
         val minutes = timeInMin % 60
-        Timber.d("Current TimeZone: ${TimeZone.getDefault()}")
         Timber.d("Parsed Time: $hours : $minutes")
 
         return "$hours : $minutes"
