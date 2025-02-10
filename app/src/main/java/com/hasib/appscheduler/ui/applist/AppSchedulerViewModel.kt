@@ -11,12 +11,13 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.TimeZone
 import javax.inject.Inject
+import kotlin.collections.mutableListOf
 
 @HiltViewModel
 class AppSchedulerViewModel @Inject constructor(
     private val packageInfoRepository: PackageInfoRepository
 ) : ViewModel() {
-
+    val appsList = mutableListOf<AppInfoUiModel>()
     private val _appsStateList = mutableStateListOf<AppInfoUiModel>()
     val appsStateList: SnapshotStateList<AppInfoUiModel> get() = _appsStateList
 
@@ -27,10 +28,13 @@ class AppSchedulerViewModel @Inject constructor(
     fun getPackageInfo() {
         viewModelScope.launch {
             _appsStateList.clear()
+            val appInfoUiModels = packageInfoRepository.getInstalledApps().map {
+                AppInfoUiModel(it, formatTimestampToDateTime(it.scheduledTime))
+            }
+            appsList.clear()
+            appsList.addAll(appInfoUiModels)
             _appsStateList.addAll(
-                packageInfoRepository.getInstalledApps().map {
-                    AppInfoUiModel(it, formatTimestampToDateTime(it.scheduledTime))
-                }
+                appInfoUiModels
             )
         }
     }
@@ -43,7 +47,9 @@ class AppSchedulerViewModel @Inject constructor(
             packageInfoRepository.setAppSchedule(appInfoUiModel.appInfo)
 
             val index = _appsStateList.indexOf(appInfoUiModel)
-            _appsStateList[index] = appInfoUiModel.copy(formattedScheduledTime = formatTimestampToDateTime(scheduleTimeInMillis))
+            _appsStateList[index] = appInfoUiModel.copy(
+                formattedScheduledTime = formatTimestampToDateTime(scheduleTimeInMillis)
+            )
             Timber.d("Current Time: ${System.currentTimeMillis()} Scheduled Time: $scheduleTimeInMillis")
         }
     }
@@ -54,6 +60,13 @@ class AppSchedulerViewModel @Inject constructor(
             val index = _appsStateList.indexOf(appInfoUiModel)
             _appsStateList[index] = appInfoUiModel.copy(formattedScheduledTime = null)
         }
+    }
+
+    fun searchApps(query: String) {
+        _appsStateList.clear()
+        _appsStateList.addAll(
+            appsList.filter { it.appInfo.appName.contains(query, ignoreCase = true) }
+        )
     }
 
     private fun formatTimestampToDateTime(timestamp: Long?): String? {

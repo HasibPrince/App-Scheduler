@@ -21,6 +21,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -31,6 +32,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberTimePickerState
@@ -66,16 +68,32 @@ private fun AppList(
     viewModel: AppSchedulerViewModel = viewModel(),
     onNavigateToRecordList: (String, String) -> Unit
 ) {
+    var searchQuery by remember { mutableStateOf("") }
     val appList = viewModel.appsStateList
-    LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(innerPadding),
-        contentPadding = PaddingValues(16.dp)
-    ) {
-        items(appList, key = { it.appInfo.packageName }) {
-            AppListItem(app = it, onNavigateToRecordList, onScheduleUpdated = { app, time ->
-                viewModel.setSchedule(app, time)
-            }) {
-                viewModel.deleteSchedule(it)
+    Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        TextField(
+            value = searchQuery,
+            onValueChange = {
+                searchQuery = it
+                viewModel.searchApps(query = searchQuery)
+                            },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("Search apps...") },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon") }
+        )
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LazyColumn(
+
+            contentPadding = PaddingValues(16.dp)
+        ) {
+            items(appList, key = { it.appInfo.packageName }) {
+                AppListItem(app = it, onNavigateToRecordList, onScheduleUpdated = { app, time ->
+                    viewModel.setSchedule(app, time)
+                }) {
+                    viewModel.deleteSchedule(it)
+                }
             }
         }
     }
@@ -159,7 +177,9 @@ fun AppListItem(
             Timber.d("Time: $time")
             showTimePickerDialog = false
             onScheduleUpdated.invoke(app, time)
-        }, onDismiss = {})
+        }, onDismiss = {
+            showTimePickerDialog = false
+        })
     }
 }
 
