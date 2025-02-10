@@ -7,6 +7,7 @@ import android.graphics.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -26,6 +27,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -48,6 +50,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hasib.appscheduler.ui.model.AppInfoUiModel
 import timber.log.Timber
@@ -70,29 +73,37 @@ private fun AppList(
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val appList = viewModel.appsStateList
-    Column(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-        TextField(
-            value = searchQuery,
-            onValueChange = {
-                searchQuery = it
-                viewModel.searchApps(query = searchQuery)
-                            },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("Search apps...") },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon") }
-        )
 
-        Spacer(modifier = Modifier.height(8.dp))
+    SimpleAlertDialog(viewModel)
 
-        LazyColumn(
+    Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
+        if (appList.isEmpty()) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        }
+        Column {
+            TextField(
+                value = searchQuery,
+                onValueChange = {
+                    searchQuery = it
+                    viewModel.searchApps(query = searchQuery)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("Search apps...") },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Search Icon") }
+            )
 
-            contentPadding = PaddingValues(16.dp)
-        ) {
-            items(appList, key = { it.appInfo.packageName }) {
-                AppListItem(app = it, onNavigateToRecordList, onScheduleUpdated = { app, time ->
-                    viewModel.setSchedule(app, time)
-                }) {
-                    viewModel.deleteSchedule(it)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            LazyColumn(
+
+                contentPadding = PaddingValues(16.dp)
+            ) {
+                items(appList, key = { it.appInfo.packageName }) {
+                    AppListItem(app = it, onNavigateToRecordList, onScheduleUpdated = { app, time ->
+                        viewModel.setSchedule(app, time)
+                    }) {
+                        viewModel.deleteSchedule(it)
+                    }
                 }
             }
         }
@@ -240,5 +251,33 @@ fun getAppIconBitmap(packageName: String, context: Context): Bitmap? {
         bitmap
     } catch (e: PackageManager.NameNotFoundException) {
         null
+    }
+}
+
+@Composable
+fun SimpleAlertDialog(viewModel: AppSchedulerViewModel) {
+    var errorMessage = viewModel.errorMessage
+    var showDialog = errorMessage.value.isNotEmpty()
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.errorMessage.value = "" },
+            title = {
+                Text(text = "Error!")
+            },
+            text = {
+                Text(errorMessage.value)
+            },
+            confirmButton = {
+                Button(onClick = { viewModel.errorMessage.value = "" }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { viewModel.errorMessage.value = "" }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }

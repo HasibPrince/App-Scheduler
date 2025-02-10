@@ -6,6 +6,7 @@ import android.content.Intent
 import com.hasib.appscheduler.R
 import com.hasib.appscheduler.data.repositories.PackageInfoRepository
 import com.hasib.appscheduler.data.repositories.RecordsRepository
+import com.hasib.appscheduler.domian.usecases.UpdateNextAppScheduleUseCase
 import com.hasib.appscheduler.ui.PACKAGE_NAME
 import com.hasib.appscheduler.ui.REQUEST_CODE
 import com.hasib.appscheduler.utils.NotificationViewer
@@ -19,11 +20,10 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class AppLaunchReceiver : BroadcastReceiver() {
-
-    @Inject
-    lateinit var packageInfoRepository: PackageInfoRepository
     @Inject
     lateinit var recordsRepository: RecordsRepository
+    @Inject
+    lateinit var updateNextAppScheduleUseCase: UpdateNextAppScheduleUseCase
 
     private val coroutineScope = CoroutineScope(Dispatchers.Main.immediate + SupervisorJob())
 
@@ -31,9 +31,10 @@ class AppLaunchReceiver : BroadcastReceiver() {
         val packageName = intent?.getStringExtra(PACKAGE_NAME) ?: return
         val requestCode = intent.getIntExtra(REQUEST_CODE, -1)
         Timber.d( "Received intent to launch app: $packageName requestCode: $requestCode")
+
         coroutineScope.launch {
             recordsRepository.saveScheduleRecord(packageName)
-            packageInfoRepository.updateAppSchedule(packageName)
+            updateNextAppScheduleUseCase.invoke(packageName)
         }
 
         NotificationViewer.showNotification(

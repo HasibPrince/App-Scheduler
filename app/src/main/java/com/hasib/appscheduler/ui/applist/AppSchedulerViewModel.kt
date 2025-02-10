@@ -1,13 +1,19 @@
 package com.hasib.appscheduler.ui.applist
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hasib.appscheduler.data.repositories.PackageInfoRepository
+import com.hasib.appscheduler.domian.model.doOnError
+import com.hasib.appscheduler.domian.usecases.DeleteAppScheduleUseCase
+import com.hasib.appscheduler.domian.usecases.SetAppScheduleUseCase
 import com.hasib.appscheduler.ui.model.AppInfoUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.serialization.json.JsonPrimitive
 import timber.log.Timber
 import java.util.TimeZone
 import javax.inject.Inject
@@ -15,11 +21,15 @@ import kotlin.collections.mutableListOf
 
 @HiltViewModel
 class AppSchedulerViewModel @Inject constructor(
-    private val packageInfoRepository: PackageInfoRepository
+    private val packageInfoRepository: PackageInfoRepository,
+    private val setAppScheduleUseCase: SetAppScheduleUseCase,
+    private val deleteAppScheduleUseCase: DeleteAppScheduleUseCase
 ) : ViewModel() {
     val appsList = mutableListOf<AppInfoUiModel>()
     private val _appsStateList = mutableStateListOf<AppInfoUiModel>()
     val appsStateList: SnapshotStateList<AppInfoUiModel> get() = _appsStateList
+
+    val errorMessage: MutableState<String> = mutableStateOf("")
 
     init {
         getPackageInfo()
@@ -44,7 +54,11 @@ class AppSchedulerViewModel @Inject constructor(
             Timber.d("Selected Time for ${appInfoUiModel.appInfo.packageName}: $time")
             val scheduleTimeInMillis = convertTimeToMillis(time)
             appInfoUiModel.appInfo.scheduledTime = scheduleTimeInMillis
-            packageInfoRepository.setAppSchedule(appInfoUiModel.appInfo)
+
+            val result = setAppScheduleUseCase.invoke(appInfoUiModel.appInfo)
+            result.doOnError {
+                errorMessage.value = it.message ?: "Something went wrong"
+            }
 
             val index = _appsStateList.indexOf(appInfoUiModel)
             _appsStateList[index] = appInfoUiModel.copy(
@@ -56,7 +70,10 @@ class AppSchedulerViewModel @Inject constructor(
 
     fun deleteSchedule(appInfoUiModel: AppInfoUiModel) {
         viewModelScope.launch {
-            packageInfoRepository.deleteSchedule(appInfoUiModel.appInfo)
+            val result = deleteAppScheduleUseCase.invoke(appInfoUiModel.appInfo)
+            result.doOnError {
+                errorMessage.value = it.message ?: "Something went wrong"
+            }
             val index = _appsStateList.indexOf(appInfoUiModel)
             _appsStateList[index] = appInfoUiModel.copy(formattedScheduledTime = null)
         }

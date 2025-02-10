@@ -15,10 +15,10 @@
       </SelectionState>
       <SelectionState runConfigName="AppScheduler.app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-02-07T02:30:08.515404Z">
+        <DropdownSelection timestamp="2025-02-10T13:12:49.706178Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/md.hasib/.android/avd/Pixel_3a_API_34_extension_level_7_arm64-v8a.avd" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/Users/md.hasib/.android/avd/Medium_Phone_API_26.avd" />
             </handle>
           </Target>
         </DropdownSelection>
