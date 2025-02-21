@@ -1,9 +1,11 @@
 package com.hasib.appscheduler.ui.applist
 
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.runtime.snapshots.StateObject
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hasib.appscheduler.data.repositories.PackageInfoRepository
@@ -15,9 +17,7 @@ import com.hasib.appscheduler.domian.usecases.SetAppScheduleUseCase
 import com.hasib.appscheduler.ui.model.AppInfoUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.JsonPrimitive
 import timber.log.Timber
-import java.util.TimeZone
 import javax.inject.Inject
 import kotlin.collections.mutableListOf
 
@@ -29,8 +29,9 @@ class AppSchedulerViewModel @Inject constructor(
 ) : ViewModel() {
     val appsList = mutableListOf<AppInfoUiModel>()
     private val _appsStateList = mutableStateListOf<AppInfoUiModel>()
-    val appsStateList: SnapshotStateList<AppInfoUiModel> get() = _appsStateList
+    val appsStateList: List<AppInfoUiModel> get() = _appsStateList
 
+    val searchQuery = mutableStateOf("")
     val errorMessage: MutableState<String> = mutableStateOf("")
 
     init {
@@ -93,11 +94,15 @@ class AppSchedulerViewModel @Inject constructor(
         }
     }
 
-    fun searchApps(query: String) {
+    fun searchApps(listState: LazyListState) {
         _appsStateList.clear()
         _appsStateList.addAll(
-            appsList.filter { it.appInfo.appName.contains(query, ignoreCase = true) }
+            appsList.filter { it.appInfo.appName.contains(searchQuery.value, ignoreCase = true) }
         )
+
+        viewModelScope.launch {
+            listState.scrollToItem(0)
+        }
     }
 
     private fun formatTimestampToDateTime(timestamp: Long?): String? {

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -49,11 +50,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.hasib.appscheduler.ui.model.AppInfoUiModel
-import timber.log.Timber
 import java.util.Calendar
 
 @Composable
@@ -71,21 +71,21 @@ private fun AppList(
     viewModel: AppSchedulerViewModel = viewModel(),
     onNavigateToRecordList: (String, String) -> Unit
 ) {
-    var searchQuery by remember { mutableStateOf("") }
+    var searchQuery = viewModel.searchQuery
     val appList = viewModel.appsStateList
-
+    val listState = rememberLazyListState()
     SimpleAlertDialog(viewModel)
 
     Box(modifier = Modifier.fillMaxSize().padding(innerPadding)) {
-        if (appList.isEmpty()) {
+        if (appList.isEmpty() && searchQuery.value.isEmpty()) {
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         }
         Column {
             TextField(
-                value = searchQuery,
+                value = searchQuery.value,
                 onValueChange = {
-                    searchQuery = it
-                    viewModel.searchApps(query = searchQuery)
+                    searchQuery.value = it
+                    viewModel.searchApps(listState)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("Search apps...") },
@@ -95,7 +95,7 @@ private fun AppList(
             Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn(
-
+                state = listState,
                 contentPadding = PaddingValues(16.dp)
             ) {
                 items(appList, key = { it.appInfo.packageName }) {
